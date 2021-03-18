@@ -1,21 +1,12 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.handler.predicate;
+
+import static org.springframework.cloud.gateway.handler.support.RoutePredicateFactoryUtils.traceMatch;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.URI_TEMPLATE_VARIABLES_ATTRIBUTE;
+import static org.springframework.http.server.PathContainer.parsePath;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Predicate;
 
 import org.springframework.http.server.PathContainer;
 import org.springframework.tuple.Tuple;
@@ -24,16 +15,10 @@ import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPattern.PathMatchInfo;
 import org.springframework.web.util.pattern.PathPatternParser;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Predicate;
-
-import static org.springframework.cloud.gateway.handler.support.RoutePredicateFactoryUtils.traceMatch;
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.URI_TEMPLATE_VARIABLES_ATTRIBUTE;
-import static org.springframework.http.server.PathContainer.parsePath;
-
 /**
- * @author Spencer Gibb
+ * 请求 Path 匹配指定值。注意path=/foo/123 <=> /foo/{segment}的解析
+ *
+ * @author karen
  */
 public class PathRoutePredicateFactory implements RoutePredicateFactory {
 
@@ -50,9 +35,10 @@ public class PathRoutePredicateFactory implements RoutePredicateFactory {
 
 	@Override
 	public Predicate<ServerWebExchange> apply(Tuple args) {
-	    // 解析 Path ，创建对应的 PathPattern
+		// 解析 Path ，创建对应的 PathPattern
 		String unparsedPattern = args.getString(PATTERN_KEY);
 		PathPattern pattern;
+		//考虑到解析过程中的线程安全，此处使用 synchronized 修饰符，
 		synchronized (this.pathPatternParser) {
 			pattern = this.pathPatternParser.parse(unparsedPattern);
 		}
@@ -64,12 +50,11 @@ public class PathRoutePredicateFactory implements RoutePredicateFactory {
 			boolean match = pattern.matches(path);
 			traceMatch("Pattern", pattern.getPatternString(), path, match);
 			if (match) {
-			    // 解析 路径参数，例如 path=/foo/123 <=> /foo/{segment}
+				// 解析 路径参数，例如 path=/foo/123 <=> /foo/{segment}
 				PathMatchInfo uriTemplateVariables = pattern.matchAndExtract(path);
 				exchange.getAttributes().put(URI_TEMPLATE_VARIABLES_ATTRIBUTE, uriTemplateVariables);
 				return true;
-			}
-			else {
+			} else {
 				return false;
 			}
 		};

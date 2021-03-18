@@ -17,15 +17,17 @@
 
 package org.springframework.cloud.gateway.handler.predicate;
 
-import org.springframework.tuple.Tuple;
-import org.springframework.web.server.ServerWebExchange;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.springframework.tuple.Tuple;
+import org.springframework.web.server.ServerWebExchange;
+
 /**
- * @author Spencer Gibb
+ * 请求指定 header 正则匹配指定值。参考{@link CookieRoutePredicateFactory}
+ *
+ * @author karen
  */
 public class HeaderRoutePredicateFactory implements RoutePredicateFactory {
 
@@ -45,7 +47,7 @@ public class HeaderRoutePredicateFactory implements RoutePredicateFactory {
 		return exchange -> {
 			List<String> values = exchange.getRequest().getHeaders().get(header);
 			for (String value : values) {
-                // 正则匹配
+				// 正则匹配
 				if (value.matches(regexp)) {
 					return true;
 				}

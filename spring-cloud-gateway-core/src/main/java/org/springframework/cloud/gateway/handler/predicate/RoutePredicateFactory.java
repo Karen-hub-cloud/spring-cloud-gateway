@@ -1,20 +1,3 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.handler.predicate;
 
 import org.springframework.cloud.gateway.support.ArgumentHints;
@@ -25,15 +8,29 @@ import org.springframework.web.server.ServerWebExchange;
 import java.util.function.Predicate;
 
 /**
- * @author Spencer Gibb
+ * 路由谓语工厂接口：
+ * Spring Cloud Gateway 创建 Route 对象时，使用 RoutePredicateFactory 创建 Predicate 对象。
+ * Predicate 对象可以赋值给 Route.predicate 属性，用于匹配请求对应的 Route 。
+ * @author karen
  */
 @FunctionalInterface
 public interface RoutePredicateFactory extends ArgumentHints {
 
     String PATTERN_KEY = "pattern";
 
+	/**
+	 * 接口方法，创建 Predicate，有十种实现，
+	 * 例如AfterRoutePredicateFactory，BeforeRoutePredicateFactory。。。
+	 * @param args
+	 * @return
+	 */
 	Predicate<ServerWebExchange> apply(Tuple args);
 
+	/**
+	 * 获得 RoutePredicateFactory 的名字。该方法截取类名前半段，
+	 * 例如 QueryRoutePredicateFactory 的结果为 Query
+	 * @return
+	 */
 	default String name() {
 		return NameUtils.normalizePredicateName(getClass());
 	}

@@ -61,13 +61,31 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * @author Spencer Gibb
+ * Spring Cloud Gateway 核心配置类，初始化如下 ：
+ *
+ * NettyConfiguration
+ * GlobalFilter
+ * FilteringWebHandler
+ * GatewayProperties
+ * PrefixPathGatewayFilterFactory
+ * RoutePredicateFactory
+ * RouteDefinitionLocator
+ * RouteLocator
+ * RoutePredicateHandlerMapping
+ * GatewayWebfluxEndpoint
  */
+//证明这是一个Configuration类，下面的所有注解都会被壮载
 @Configuration
+//通过@ConditionalOnProperty来控制Configuration是否生效
+//在application.properties配置"spring.cloud.gateway.enabled"，对应的值为true
 @ConditionalOnProperty(name = "spring.cloud.gateway.enabled", matchIfMissing = true) // 默认开启
+//与@Configuration差不多
 @EnableConfigurationProperties
+//GatewayAutoConfiguration会在HttpHandlerAutoConfiguration之前加载
 @AutoConfigureBefore(HttpHandlerAutoConfiguration.class)
+//GatewayAutoConfiguration在GatewayLoadBalancerClientAutoConfiguration之后加载
 @AutoConfigureAfter({GatewayLoadBalancerClientAutoConfiguration.class, GatewayClassPathWarningAutoConfiguration.class})
+//就是说只有在classpath下能找到DispatcherHandler才会构建这个bean
 @ConditionalOnClass(DispatcherHandler.class)
 public class GatewayAutoConfiguration {
 

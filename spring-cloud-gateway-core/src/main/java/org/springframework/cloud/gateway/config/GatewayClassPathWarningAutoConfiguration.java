@@ -8,7 +8,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.context.annotation.Configuration;
 
 /**
- * GatewayClassPathWarningAutoConfiguration 用于检查项目是否正确导入 spring-boot-starter-webflux 依赖，而不是错误导入 spring-boot-starter-web 依赖。
+ * GatewayClassPathWarningAutoConfiguration 用于检查项目是否正确导入 spring-boot-starter-webflux 依赖，
+ * 而不是错误导入 spring-boot-starter-web 依赖。
  */
 @Configuration
 @AutoConfigureBefore(GatewayAutoConfiguration.class)

@@ -1,20 +1,3 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.support;
 
 import org.apache.commons.logging.Log;
@@ -81,8 +64,17 @@ public class ServerWebExchangeUtils {
 		return httpStatus;
 	}
 
+	/**
+	 * 添加 原始请求URI 到 GATEWAY_ORIGINAL_REQUEST_URL_ATTR
+	 * @param exchange
+	 * @param url
+	 */
 	public static void addOriginalRequestUrl(ServerWebExchange exchange, URI url) {
-		exchange.getAttributes().computeIfAbsent(GATEWAY_ORIGINAL_REQUEST_URL_ATTR, s -> new LinkedHashSet<>()); // 数组，考虑多次重写
+		/**
+		 * 为什么使用 LinkedHashSet ？
+		 * 因为可以使用 RewritePathGatewayFilterFactory / PrefixPathGatewayFilterFactory 多次重写。
+		 */
+		exchange.getAttributes().computeIfAbsent(GATEWAY_ORIGINAL_REQUEST_URL_ATTR, s -> new LinkedHashSet<>());
 		LinkedHashSet<URI> uris = exchange.getRequiredAttribute(GATEWAY_ORIGINAL_REQUEST_URL_ATTR);
 		uris.add(url);
 	}

@@ -1,21 +1,12 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.route;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,43 +31,44 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.tuple.Tuple;
 import org.springframework.tuple.TupleBuilder;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Flux;
 
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import reactor.core.publisher.Flux;
 
 /**
  * {@link RouteLocator} that loads routes from a {@link RouteDefinitionLocator}
- * @author Spencer Gibb
  */
 public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAware {
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private final RouteDefinitionLocator routeDefinitionLocator;
-    /**
-     * RoutePredicateFactory 映射
-     * key ：{@link RoutePredicateFactory#name()}
-     */
+	/**
+	 * RoutePredicateFactory 映射
+	 * key ：{@link RoutePredicateFactory#name()}
+	 */
 	private final Map<String, RoutePredicateFactory> predicates = new LinkedHashMap<>();
-    /**
-     * GatewayFilterFactory 映射
-     * key ：{@link GatewayFilterFactory#name()}
-     */
+	/**
+	 * GatewayFilterFactory 映射
+	 * key ：{@link GatewayFilterFactory#name()}
+	 */
 	private final Map<String, GatewayFilterFactory> gatewayFilterFactories = new HashMap<>();
 	private final GatewayProperties gatewayProperties;
 	private final SpelExpressionParser parser = new SpelExpressionParser();
 	private BeanFactory beanFactory;
 
 	public RouteDefinitionRouteLocator(RouteDefinitionLocator routeDefinitionLocator,
-									   List<RoutePredicateFactory> predicates,
-									   List<GatewayFilterFactory> gatewayFilterFactories,
-									   GatewayProperties gatewayProperties) {
+			List<RoutePredicateFactory> predicates,
+			List<GatewayFilterFactory> gatewayFilterFactories,
+			GatewayProperties gatewayProperties) {
 		// 设置 RouteDefinitionLocator
-	    this.routeDefinitionLocator = routeDefinitionLocator;
+		this.routeDefinitionLocator = routeDefinitionLocator;
 		// 初始化 RoutePredicateFactory
 		initFactories(predicates);
-		// 初始化 RoutePredicateFactory
+		/**
+		 * 初始化 RoutePredicateFactory
+		 * RoutePredicateFactory Bean 对象映射。
+		 * key 为 {@link GatewayFilterFactory#name()} 。
+		 * 通过它，将 RouteDefinition.filters 转换成 Route.filters
+		 */
 		gatewayFilterFactories.forEach(factory -> this.gatewayFilterFactories.put(factory.name(), factory));
 		// 设置 GatewayProperties
 		this.gatewayProperties = gatewayProperties;
@@ -87,11 +79,15 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 		this.beanFactory = beanFactory;
 	}
 
+	/**
+	 * key 为 {@link RoutePredicateFactory#name()} 。
+	 * 通过它，将 RouteDefinition.predicates 转换成 Route.predicates
+	 */
 	private void initFactories(List<RoutePredicateFactory> predicates) {
 		predicates.forEach(factory -> {
 			String key = factory.name();
 			if (this.predicates.containsKey(key)) { // KEY 冲突
-				this.logger.warn("A RoutePredicateFactory named "+ key
+				this.logger.warn("A RoutePredicateFactory named " + key
 						+ " already exists, class: " + this.predicates.get(key)
 						+ ". It will be overwritten.");
 			}
@@ -102,27 +98,26 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 		});
 	}
 
+
 	@Override
 	public Flux<Route> getRoutes() {
 		return this.routeDefinitionLocator.getRouteDefinitions()
-				.map(this::convertToRoute) // RouteDefinition => Route
-				//TODO: error handling
-				.map(route -> { // 打印日志
+				// RouteDefinition => Route
+				.map(this::convertToRoute)
+				// 打印日志
+				.map(route -> {
 					if (logger.isDebugEnabled()) {
 						logger.debug("RouteDefinition matched: " + route.getId());
 					}
 					return route;
 				});
-
-
-		/* TODO: trace logging
-			if (logger.isTraceEnabled()) {
-				logger.trace("RouteDefinition did not match: " + routeDefinition.getId());
-			}*/
 	}
 
+	/**
+	 * 将每个 RouteDefinition 转换成 Route
+	 */
 	private Route convertToRoute(RouteDefinition routeDefinition) {
-	    // 合并 Predicate
+		// 合并 Predicate
 		Predicate<ServerWebExchange> predicate = combinePredicates(routeDefinition);
 		// 获得 GatewayFilter
 		List<GatewayFilter> gatewayFilters = getFilters(routeDefinition);
@@ -136,32 +131,37 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 	private List<GatewayFilter> loadGatewayFilters(String id, List<FilterDefinition> filterDefinitions) {
 		List<GatewayFilter> filters = filterDefinitions.stream()
 				.map(definition -> { // FilterDefinition => GatewayFilter
-				    // 获得 GatewayFilterFactory
+					// 获得 GatewayFilterFactory
 					GatewayFilterFactory filter = this.gatewayFilterFactories.get(definition.getName());
 					if (filter == null) {
-						throw new IllegalArgumentException("Unable to find GatewayFilterFactory with name " + definition.getName());
+						throw new IllegalArgumentException(
+								"Unable to find GatewayFilterFactory with name " + definition.getName());
 					}
 					// 获得 Tuple
 					Map<String, String> args = definition.getArgs();
 					if (logger.isDebugEnabled()) {
-						logger.debug("RouteDefinition " + id + " applying filter " + args + " to " + definition.getName());
+						logger.debug(
+								"RouteDefinition " + id + " applying filter " + args + " to " + definition.getName());
 					}
 					Tuple tuple = getTuple(filter, args, this.parser, this.beanFactory);
 					// 获得 GatewayFilter
 					return filter.apply(tuple);
 				})
 				.collect(Collectors.toList()); // 转成 List
-        // GatewayFilter => OrderedGatewayFilter
+		// GatewayFilter => OrderedGatewayFilter
 		ArrayList<GatewayFilter> ordered = new ArrayList<>(filters.size());
 		for (int i = 0; i < filters.size(); i++) {
-			ordered.add(new OrderedGatewayFilter(filters.get(i), i+1));
+			ordered.add(new OrderedGatewayFilter(filters.get(i), i + 1));
 		}
 		// 返回 GatewayFilter 数组
 		return ordered;
 	}
 
-	//TODO: make argument resolving a strategy
-	/* for testing */ static Tuple getTuple(ArgumentHints hasArguments, Map<String, String> args, SpelExpressionParser parser, BeanFactory beanFactory) {
+	/**
+	 *
+	 */
+	static Tuple getTuple(ArgumentHints hasArguments, Map<String, String> args, SpelExpressionParser parser,
+			BeanFactory beanFactory) {
 		TupleBuilder builder = TupleBuilder.tuple();
 
 		// 参数为空
@@ -177,7 +177,7 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 		// 创建 Tuple
 		int entryIdx = 0;
 		for (Map.Entry<String, String> entry : args.entrySet()) {
-		    // 获得参数 KEY
+			// 获得参数 KEY
 			String key = entry.getKey();
 			// RoutePredicateFactory has name hints and this has a fake key name
 			// replace with the matching key hint
@@ -217,6 +217,9 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 		return tuple;
 	}
 
+	/**
+	 * 获得 GatewayFilter 数组
+	 */
 	private List<GatewayFilter> getFilters(RouteDefinition routeDefinition) {
 		List<GatewayFilter> filters = new ArrayList<>();
 		// 添加 默认过滤器
@@ -234,8 +237,13 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 		return filters;
 	}
 
+	/**
+	 * 将 RouteDefinition.predicates 数组合并成一个 java.util.function.Predicate，
+	 * 这样 RoutePredicateHandlerMapping 为请求匹配 Route ，
+	 * 只要调用一次 Predicate#test(ServerWebExchange) 方法即可。
+	 */
 	private Predicate<ServerWebExchange> combinePredicates(RouteDefinition routeDefinition) {
-	    // 寻找 Predicate
+		// 寻找 Predicate
 		List<PredicateDefinition> predicates = routeDefinition.getPredicates();
 		Predicate<ServerWebExchange> predicate = lookup(routeDefinition, predicates.get(0));
 		// 拼接 Predicate
@@ -247,8 +255,13 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 		return predicate;
 	}
 
+	/**
+	 * 查找 PredicateDefinition 对应的 Predicate 。
+	 * 为什么拆成两部分？第一部分找到 java.util.function.Predicate ，
+	 * 第二部分通过 Predicate#and(Predicate) 方法不断拼接
+	 */
 	private Predicate<ServerWebExchange> lookup(RouteDefinition routeDefinition, PredicateDefinition predicate) {
-	    // 获得 RoutePredicateFactory
+		// 获得 RoutePredicateFactory Bean 对象。
 		RoutePredicateFactory found = this.predicates.get(predicate.getName());
 		if (found == null) {
 			throw new IllegalArgumentException("Unable to find RoutePredicateFactory with name " + predicate.getName());

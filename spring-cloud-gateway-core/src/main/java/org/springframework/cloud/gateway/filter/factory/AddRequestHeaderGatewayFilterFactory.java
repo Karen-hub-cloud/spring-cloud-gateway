@@ -1,31 +1,26 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.filter.factory;
-
-import org.springframework.tuple.Tuple;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.tuple.Tuple;
+
 /**
- * @author Spencer Gibb
+ * Filter：添加指定请求 Header 为指定值。
+ * 配置：
+ * spring:
+ *   cloud:
+ *     gateway:
+ *       routes:
+ *       # =====================================
+ *       - id: add_request_header_route
+ *         uri: http://example.org
+ *         filters:
+ *         - AddRequestHeader=X-Request-Foo, Bar
+ *
+ * @author karen
  */
 public class AddRequestHeaderGatewayFilterFactory implements GatewayFilterFactory {
 
@@ -34,13 +29,18 @@ public class AddRequestHeaderGatewayFilterFactory implements GatewayFilterFactor
 		return Arrays.asList(NAME_KEY, VALUE_KEY);
 	}
 
+	/**
+	 *
+	 * @param args Tuple 参数 ：name / value
+	 * @return
+	 */
 	@Override
 	public GatewayFilter apply(Tuple args) {
 		String name = args.getString(NAME_KEY);
 		String value = args.getString(VALUE_KEY);
 
-		return (exchange, chain) -> { // GatewayFilter
-            // 创建新的 ServerHttpRequest
+		return (exchange, chain) -> {
+			// 创建新的 ServerHttpRequest
 			ServerHttpRequest request = exchange.getRequest().mutate()
 					.header(name, value)
 					.build();

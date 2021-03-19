@@ -1,20 +1,3 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.filter.factory;
 
 import java.net.URI;
@@ -28,7 +11,19 @@ import org.springframework.util.StringUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 
 /**
- * @author Spencer Gibb
+ * {@link AddRequestHeaderGatewayFilterFactory}
+ * Filter：指定RequestParameter为新的request
+ * spring:
+ *   cloud:
+ *     gateway:
+ *       routes:
+ *       # =====================================
+ *       - id: add_request_parameter_route
+ *         uri: http://example.org
+ *         filters:
+ *         - AddRequestParameter=foo, bar
+ *
+ * @author karen
  */
 public class AddRequestParameterGatewayFilterFactory implements GatewayFilterFactory {
 
@@ -37,6 +32,11 @@ public class AddRequestParameterGatewayFilterFactory implements GatewayFilterFac
 		return Arrays.asList(NAME_KEY, VALUE_KEY);
 	}
 
+	/**
+	 *
+	 * @param args
+	 * @return
+	 */
 	@Override
 	public GatewayFilter apply(Tuple args) {
 		String parameter = args.getString(NAME_KEY);

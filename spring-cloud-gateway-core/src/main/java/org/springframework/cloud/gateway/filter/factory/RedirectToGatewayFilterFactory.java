@@ -1,29 +1,7 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.filter.factory;
 
-import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.tuple.Tuple;
-import org.springframework.util.Assert;
-import reactor.core.publisher.Mono;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.parse;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -31,11 +9,28 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.parse;
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
+import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.tuple.Tuple;
+import org.springframework.util.Assert;
+
+import reactor.core.publisher.Mono;
 
 /**
- * @author Spencer Gibb
+ * spring:
+ *   cloud:
+ *     gateway:
+ *       routes:
+ *       # =====================================
+ *       - id: prefixpath_route
+ *         uri: http://example.org
+ *         filters:
+ *         - RedirectTo=302, http://www.iocoder.cn
+ * 将响应重定向到指定 URL ，并设置响应状态码为指定 Status 。注意，Status 必须为 3XX 重定向状态码。
+ *
+ * @author karen
  */
 public class RedirectToGatewayFilterFactory implements GatewayFilterFactory {
 
@@ -64,18 +59,18 @@ public class RedirectToGatewayFilterFactory implements GatewayFilterFactory {
 		}
 
 		return (exchange, chain) ->
-			chain.filter(exchange).then(Mono.defer(() -> { // After Filter
-				if (!exchange.getResponse().isCommitted()) {
-				    // 设置响应 Status
-					setResponseStatus(exchange, httpStatus);
+				chain.filter(exchange).then(Mono.defer(() -> { // After Filter
+					if (!exchange.getResponse().isCommitted()) {
+						// 设置响应 Status
+						setResponseStatus(exchange, httpStatus);
 
-					// 设置响应 Header
-					final ServerHttpResponse response = exchange.getResponse();
-					response.getHeaders().set(HttpHeaders.LOCATION, url.toString());
-					return response.setComplete();
-				}
-				return Mono.empty();
-			}));
+						// 设置响应 Header
+						final ServerHttpResponse response = exchange.getResponse();
+						response.getHeaders().set(HttpHeaders.LOCATION, url.toString());
+						return response.setComplete();
+					}
+					return Mono.empty();
+				}));
 	}
 
 }

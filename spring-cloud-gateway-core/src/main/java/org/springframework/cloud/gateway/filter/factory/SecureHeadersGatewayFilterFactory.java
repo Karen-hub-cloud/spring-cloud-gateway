@@ -1,29 +1,15 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.filter.factory;
 
+import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.tuple.Tuple;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
 
 /**
- * https://blog.appcanary.com/2017/http-security-headers.html
- * @author Spencer Gibb
+ * 添加响应 Secure 相关的 Header,默认值在{@link SecureHeadersProperties}中配置
+ * 四个常见的安全头部：@see "https://segmentfault.com/a/1190000000419263"
+ * and @see "https://blog.appcanary.com/2017/http-security-headers.html"
+ *
+ * @author karen
  */
 public class SecureHeadersGatewayFilterFactory implements GatewayFilterFactory {
 
@@ -44,12 +30,10 @@ public class SecureHeadersGatewayFilterFactory implements GatewayFilterFactory {
 
 	@Override
 	public GatewayFilter apply(Tuple args) {
-		//TODO: allow args to override properties
 
 		return (exchange, chain) -> {
 			HttpHeaders headers = exchange.getResponse().getHeaders();
 
-			//TODO: allow header to be disabled
 			headers.add(X_XSS_PROTECTION_HEADER, properties.getXssProtectionHeader());
 			headers.add(STRICT_TRANSPORT_SECURITY_HEADER, properties.getStrictTransportSecurity());
 			headers.add(X_FRAME_OPTIONS_HEADER, properties.getFrameOptions());

@@ -46,11 +46,11 @@ public class Route implements Ordered {
      */
 	private final int order;
     /**
-     * 谓语数组
+     * 谓语数组：表示匹配Route的前置条件
      */
 	private final Predicate<ServerWebExchange> predicate;
     /**
-     * 过滤器数组
+     * 过滤器数组，用于处理切面逻辑
      */
 	private final List<GatewayFilter> gatewayFilters;
 
@@ -143,6 +143,7 @@ public class Route implements Ordered {
 		return this.uri;
 	}
 
+	@Override
 	public int getOrder() {
 		return order;
 	}
@@ -157,8 +158,12 @@ public class Route implements Ordered {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		Route route = (Route) o;
 		return Objects.equals(id, route.id) &&
 				Objects.equals(uri, route.uri) &&

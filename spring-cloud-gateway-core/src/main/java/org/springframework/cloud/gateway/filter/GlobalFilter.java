@@ -1,20 +1,3 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.filter;
 
 import org.springframework.web.server.ServerWebExchange;
@@ -23,12 +6,17 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import reactor.core.publisher.Mono;
 
 /**
- * Contract for interception-style, chained processing of Web requests that may
- * be used to implement cross-cutting, application-agnostic requirements such
- * as security, timeouts, and others.
- *
- * @author Rossen Stoyanchev
- * @since 5.0
+ * 全局过滤器接口,GlobalFilter 会作用到所有的 Route 上。
+ * 顺序：
+ * 1.{@link NettyWriteResponseFilter} -1
+ * 2.{@link WebClientWriteResponseFilter} -1
+ * 3.{@link RouteToRequestUrlFilter} 10000
+ * 4.{@link LoadBalancerClientFilter} 10100
+ * 5.{@link ForwardRoutingFilter} Integer.MAX_VALUE
+ * 6.{@link NettyRoutingFilter} Integer.MAX_VALUE
+ * 7.{@link WebClientHttpRoutingFilter} Integer.MAX_VALUE
+ * 8.{@link WebsocketRoutingFilter} Integer.MAX_VALUE
+ * @author karen
  */
 public interface GlobalFilter {
 

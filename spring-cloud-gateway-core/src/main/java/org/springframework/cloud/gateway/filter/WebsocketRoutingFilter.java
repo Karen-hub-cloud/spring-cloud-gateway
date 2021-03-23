@@ -18,12 +18,20 @@ import java.util.List;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.*;
 
 /**
- * @author Spencer Gibb
+ * Websocket 路由网关过滤器。其根据 ws:// / wss:// 前缀( Scheme )过滤处理，
+ * 代理后端 Websocket 服务，提供给客户端连接。
+ * @author karen
  */
 public class WebsocketRoutingFilter implements GlobalFilter, Ordered {
 	public static final String SEC_WEBSOCKET_PROTOCOL = "Sec-WebSocket-Protocol";
 
+	/**
+	 * 通过该属性，连接后端【被代理】的 WebSocket 服务。
+	 */
 	private final WebSocketClient webSocketClient;
+	/**
+	 * 通过该属性，处理客户端发起的连接请求( Handshake Request )
+	 */
 	private final WebSocketService webSocketService;
 
 	public WebsocketRoutingFilter(WebSocketClient webSocketClient) {

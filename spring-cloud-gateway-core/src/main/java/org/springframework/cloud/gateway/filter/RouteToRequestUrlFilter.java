@@ -1,20 +1,3 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.filter;
 
 import org.apache.commons.logging.Log;
@@ -31,7 +14,8 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.G
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR;
 
 /**
- * @author Spencer Gibb
+ * 根据匹配的 Route，计算请求的地址。注意，这里的地址指的是 URL ，而不是 URI 。
+ * @author karen
  */
 public class RouteToRequestUrlFilter implements GlobalFilter, Ordered {
 
@@ -45,7 +29,7 @@ public class RouteToRequestUrlFilter implements GlobalFilter, Ordered {
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-	    // 获得 Route
+	    // 获得 请求所匹配的Route
 		Route route = exchange.getAttribute(GATEWAY_ROUTE_ATTR);
 		if (route == null) {
 			return chain.filter(exchange);
@@ -54,7 +38,8 @@ public class RouteToRequestUrlFilter implements GlobalFilter, Ordered {
 		// 拼接 requestUrl
 		URI requestUrl = UriComponentsBuilder.fromHttpRequest(exchange.getRequest())
 				.uri(route.getUri())
-				.build(true) // encoded=true
+				// encoded=true
+				.build(true)
 				.toUri();
 		// 设置 requestUrl 到 GATEWAY_REQUEST_URL_ATTR {@link RewritePathGatewayFilterFactory}
 		exchange.getAttributes().put(GATEWAY_REQUEST_URL_ATTR, requestUrl);

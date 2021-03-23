@@ -1,20 +1,3 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.filter;
 
 import org.apache.commons.logging.Log;
@@ -31,7 +14,9 @@ import reactor.ipc.netty.http.client.HttpClientResponse;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.CLIENT_RESPONSE_ATTR;
 
 /**
- * @author Spencer Gibb
+ * 与 NettyRoutingFilter 成对使用的网关过滤器。{@link NettyRoutingFilter}
+ * 其将 NettyRoutingFilter 请求后端 Http 服务的响应写回客户端。
+ * @author karen
  */
 public class NettyWriteResponseFilter implements GlobalFilter, Ordered {
 
@@ -48,8 +33,9 @@ public class NettyWriteResponseFilter implements GlobalFilter, Ordered {
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 		// NOTICE: nothing in "pre" filter stage as CLIENT_RESPONSE_ATTR is not added
 		// until the WebHandler is run
+		// then() 实现 After Filter 逻辑
 		return chain.filter(exchange).then(Mono.defer(() -> {
-		    // 获得 Response
+		    // 获得 Netty Response
 			HttpClientResponse clientResponse = exchange.getAttribute(CLIENT_RESPONSE_ATTR);
 			// HttpClientResponse clientResponse = getAttribute(exchange, CLIENT_RESPONSE_ATTR, HttpClientResponse.class);
 			if (clientResponse == null) {

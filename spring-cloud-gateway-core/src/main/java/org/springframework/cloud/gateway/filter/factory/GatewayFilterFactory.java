@@ -7,9 +7,10 @@ import org.springframework.tuple.Tuple;
 
 /**
  * GatewayFilterFactory 工厂类。
- *
+ * 可能是版本不同，看到有的帖子说其继承自GatewayFilter接口
  * @author karen
  */
+//这个注解表明它是函数式接口
 @FunctionalInterface
 public interface GatewayFilterFactory extends ArgumentHints {
 

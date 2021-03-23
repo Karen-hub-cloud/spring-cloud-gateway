@@ -39,6 +39,7 @@ public class AddRequestHeaderGatewayFilterFactory implements GatewayFilterFactor
 		String name = args.getString(NAME_KEY);
 		String value = args.getString(VALUE_KEY);
 
+		//注意：每个GatewayFilterFactory 实现类的 #apply(Tuple) 方法里，都声明了一个实现 GatewayFilter 的内部类
 		return (exchange, chain) -> {
 			// 创建新的 ServerHttpRequest
 			ServerHttpRequest request = exchange.getRequest().mutate()

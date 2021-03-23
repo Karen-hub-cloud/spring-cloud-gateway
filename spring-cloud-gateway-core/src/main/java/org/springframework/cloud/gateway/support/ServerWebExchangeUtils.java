@@ -35,10 +35,19 @@ public class ServerWebExchangeUtils {
 		return ServerWebExchangeUtils.class.getName() + "." + attr;
 	}
 
+	/**
+	 * GATEWAY_ALREADY_ROUTED_ATTR：true，表示该请求已被处理
+	 * @param exchange
+	 */
 	public static void setAlreadyRouted(ServerWebExchange exchange) {
 		exchange.getAttributes().put(GATEWAY_ALREADY_ROUTED_ATTR, true);
 	}
 
+	/**
+	 * 判断该请求暂未被其他 Routing 网关处理，拿这个值：GATEWAY_ALREADY_ROUTED_ATTR
+	 * @param exchange
+	 * @return
+	 */
 	public static boolean isAlreadyRouted(ServerWebExchange exchange) {
 		return exchange.getAttributeOrDefault(GATEWAY_ALREADY_ROUTED_ATTR, false);
 	}

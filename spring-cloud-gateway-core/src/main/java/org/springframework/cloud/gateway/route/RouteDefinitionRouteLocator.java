@@ -36,6 +36,7 @@ import reactor.core.publisher.Flux;
 
 /**
  * {@link RouteLocator} that loads routes from a {@link RouteDefinitionLocator}
+ * @author karen
  */
 public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAware {
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -99,6 +100,10 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 	}
 
 
+	/**
+	 * 获得route数组
+	 * @return
+	 */
 	@Override
 	public Flux<Route> getRoutes() {
 		return this.routeDefinitionLocator.getRouteDefinitions()
@@ -130,7 +135,8 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 
 	private List<GatewayFilter> loadGatewayFilters(String id, List<FilterDefinition> filterDefinitions) {
 		List<GatewayFilter> filters = filterDefinitions.stream()
-				.map(definition -> { // FilterDefinition => GatewayFilter
+				// FilterDefinition => GatewayFilter
+				.map(definition -> {
 					// 获得 GatewayFilterFactory
 					GatewayFilterFactory filter = this.gatewayFilterFactories.get(definition.getName());
 					if (filter == null) {
@@ -147,7 +153,8 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 					// 获得 GatewayFilter
 					return filter.apply(tuple);
 				})
-				.collect(Collectors.toList()); // 转成 List
+				// 转成 List
+				.collect(Collectors.toList());
 		// GatewayFilter => OrderedGatewayFilter
 		ArrayList<GatewayFilter> ordered = new ArrayList<>(filters.size());
 		for (int i = 0; i < filters.size(); i++) {
@@ -158,7 +165,11 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 	}
 
 	/**
+	 *  TODO：Q 为什么 RoutePredicateFactory#apply(Tuple) / GatewayFilterFactory#apply(Tuple) 需要使用 Tuple 呢 ？RoutePredicateFactory /
+	 *  GatewayFilterFactory 子类实现类需要成对的参数不同，例如 ：
 	 *
+	 * org.springframework.cloud.gateway.filter.factory.SetStatusGatewayFilterFactory ，使用 status 一对参数。
+	 * org.springframework.cloud.gateway.filter.factory.SetResponseHeaderGatewayFilterFactory ，使用 name / value 两对参数。
 	 */
 	static Tuple getTuple(ArgumentHints hasArguments, Map<String, String> args, SpelExpressionParser parser,
 			BeanFactory beanFactory) {

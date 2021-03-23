@@ -1,20 +1,3 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.config;
 
 import java.util.ArrayList;
@@ -32,7 +15,13 @@ import org.springframework.validation.annotation.Validated;
 import static org.springframework.cloud.gateway.support.NameUtils.normalizeFilterName;
 
 /**
- * @author Spencer Gibb
+ * 创建一个类型为 org.springframework.cloud.gateway.config.GatewayProperties 的 Bean 对象，
+ * 用于加载配置文件配置的 RouteDefinition / FilterDefinition 。
+ * 从配置文件读取 ：
+ * 路由配置
+ * 默认过滤器配置。当 RouteDefinition => Route 时，会将过滤器配置添加到每个 Route
+ *
+ * @author karen
  */
 @ConfigurationProperties("spring.cloud.gateway")
 @Validated

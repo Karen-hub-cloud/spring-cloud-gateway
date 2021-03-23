@@ -11,7 +11,7 @@ import org.springframework.tuple.Tuple;
 /**
  * 移除请求 Proxy 相关的 Header
  *
- * @author Spencer Gibb
+ * @author Karen
  */
 @ConfigurationProperties("spring.cloud.gateway.filter.remove-non-proxy-headers")
 public class RemoveNonProxyHeadersGatewayFilterFactory implements GatewayFilterFactory {

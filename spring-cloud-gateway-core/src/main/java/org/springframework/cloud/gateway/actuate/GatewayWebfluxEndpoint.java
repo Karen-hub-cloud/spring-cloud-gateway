@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.Ordered;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -37,7 +38,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Spencer Gibb
+ * 提供管理网关的 HTTP API ，是一个Controller类
+ *
+ * @author Karen
  */
 @RestController
 @RequestMapping("${management.context-path:/application}/gateway")
@@ -45,34 +48,34 @@ public class GatewayWebfluxEndpoint implements ApplicationEventPublisherAware {
 
 	private static final Log log = LogFactory.getLog(GatewayWebfluxEndpoint.class);
 
-    /**
-     * 路由定义定位器
-     */
+	/**
+	 * 路由定义定位器
+	 */
 	private RouteDefinitionLocator routeDefinitionLocator;
-    /**
-     * 全局过滤器
-     */
+	/**
+	 * 全局过滤器
+	 */
 	private List<GlobalFilter> globalFilters;
-    /**
-     * 网关过滤器工厂
-     */
+	/**
+	 * 网关过滤器工厂
+	 */
 	private List<GatewayFilterFactory> gatewayFilters;
-    /**
-     * 存储器 RouteDefinitionLocator 对象
-     */
+	/**
+	 * 存储器 RouteDefinitionLocator 对象
+	 */
 	private RouteDefinitionWriter routeDefinitionWriter;
-    /**
-     * 路由定位器
-     */
+	/**
+	 * 路由定位器
+	 */
 	private RouteLocator routeLocator;
-    /**
-     * 应用事件发布器
-     */
+	/**
+	 * 应用事件发布器
+	 */
 	private ApplicationEventPublisher publisher;
 
 	public GatewayWebfluxEndpoint(RouteDefinitionLocator routeDefinitionLocator, List<GlobalFilter> globalFilters,
-								  List<GatewayFilterFactory> GatewayFilters, RouteDefinitionWriter routeDefinitionWriter,
-								  RouteLocator routeLocator) {
+			List<GatewayFilterFactory> GatewayFilters, RouteDefinitionWriter routeDefinitionWriter,
+			RouteLocator routeLocator) {
 		this.routeDefinitionLocator = routeDefinitionLocator;
 		this.globalFilters = globalFilters;
 		this.gatewayFilters = GatewayFilters;
@@ -90,7 +93,7 @@ public class GatewayWebfluxEndpoint implements ApplicationEventPublisherAware {
 	//TODO: this should really be a listener that responds to a RefreshEvent
 	@PostMapping("/refresh")
 	public Mono<Void> refresh() {
-	    this.publisher.publishEvent(new RefreshRoutesEvent(this));
+		this.publisher.publishEvent(new RefreshRoutesEvent(this));
 		return Mono.empty();
 	}
 
@@ -111,7 +114,7 @@ public class GatewayWebfluxEndpoint implements ApplicationEventPublisherAware {
 	private HashMap<String, Object> putItem(HashMap<String, Object> map, Object o) {
 		Integer order = null;
 		if (o instanceof Ordered) {
-			order = ((Ordered)o).getOrder();
+			order = ((Ordered) o).getOrder();
 		}
 		//filters.put(o.getClass().getName(), order);
 		map.put(o.toString(), order);
@@ -131,26 +134,31 @@ public class GatewayWebfluxEndpoint implements ApplicationEventPublisherAware {
 		});
 	}
 
-/*
-http POST :8080/admin/gateway/routes/apiaddreqhead uri=http://httpbin.org:80 predicates:='["Host=**.apiaddrequestheader.org", "Path=/headers"]' filters:='["AddRequestHeader=X-Request-ApiFoo, ApiBar"]'
-*/
+	/**
+	 * 保存路由配置
+	 * http POST :8080/admin/gateway/routes/apiaddreqhead uri=http://httpbin.org:80 predicates:='["Host=**
+	 * .apiaddrequestheader.org", "Path=/headers"]' filters:='["AddRequestHeader=X-Request-ApiFoo, ApiBar"]'
+	 */
 	@PostMapping("/routes/{id}")
 	@SuppressWarnings("unchecked")
 	public Mono<ResponseEntity<Void>> save(@PathVariable String id, @RequestBody Mono<RouteDefinition> route) {
-		return this.routeDefinitionWriter.save(route.map(r ->  { // 设置 ID
+		return this.routeDefinitionWriter.save(route.map(r -> { // 设置 ID
 			r.setId(id);
 			log.debug("Saving route: " + route);
 			return r;
-		})).then(Mono.defer(() -> // status ：201 ，创建成功。参见 HTTP 规范 ：https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201
-			Mono.just(ResponseEntity.created(URI.create("/routes/"+id)).build())
-		));
+		})).then(Mono
+				.defer(() -> // status ：201 ，创建成功。参见 HTTP 规范 ：https://developer.mozilla
+						// .org/en-US/docs/Web/HTTP/Status/201
+						Mono.just(ResponseEntity.created(URI.create("/routes/" + id)).build())
+				));
 	}
 
 	@DeleteMapping("/routes/{id}")
 	public Mono<ResponseEntity<Object>> delete(@PathVariable String id) {
 		return this.routeDefinitionWriter.delete(Mono.just(id))
 				.then(Mono.defer(() -> Mono.just(ResponseEntity.ok().build()))) // 删除成功
-				.onErrorResume(t -> t instanceof NotFoundException, t -> Mono.just(ResponseEntity.notFound().build())); // 删除失败
+				.onErrorResume(t -> t instanceof NotFoundException,
+						t -> Mono.just(ResponseEntity.notFound().build())); // 删除失败
 	}
 
 	@GetMapping("/routes/{id}")

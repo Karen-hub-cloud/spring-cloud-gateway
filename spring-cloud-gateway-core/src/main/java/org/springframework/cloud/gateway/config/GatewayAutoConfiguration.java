@@ -1,23 +1,8 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.config;
 
-import com.netflix.hystrix.HystrixObservableCommand;
+import java.util.List;
+import java.util.function.Consumer;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration;
 import org.springframework.boot.actuate.health.Health;
@@ -30,55 +15,101 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.reactive.HttpHandlerAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gateway.actuate.GatewayWebfluxEndpoint;
-import org.springframework.cloud.gateway.filter.*;
-import org.springframework.cloud.gateway.filter.factory.*;
+import org.springframework.cloud.gateway.filter.ForwardRoutingFilter;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.cloud.gateway.filter.NettyRoutingFilter;
+import org.springframework.cloud.gateway.filter.NettyWriteResponseFilter;
+import org.springframework.cloud.gateway.filter.RouteToRequestUrlFilter;
+import org.springframework.cloud.gateway.filter.WebClientHttpRoutingFilter;
+import org.springframework.cloud.gateway.filter.WebClientWriteResponseFilter;
+import org.springframework.cloud.gateway.filter.WebsocketRoutingFilter;
+import org.springframework.cloud.gateway.filter.factory.AddRequestHeaderGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.AddRequestParameterGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.AddResponseHeaderGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.HystrixGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.PrefixPathGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.RedirectToGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.RemoveNonProxyHeadersGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.RemoveRequestHeaderGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.RemoveResponseHeaderGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.RequestRateLimiterGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.RewritePathGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.SecureHeadersGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.SecureHeadersProperties;
+import org.springframework.cloud.gateway.filter.factory.SetPathGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.SetResponseHeaderGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.SetStatusGatewayFilterFactory;
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.cloud.gateway.filter.ratelimit.PrincipalNameKeyResolver;
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
 import org.springframework.cloud.gateway.handler.FilteringWebHandler;
 import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
-import org.springframework.cloud.gateway.handler.predicate.*;
-import org.springframework.cloud.gateway.route.*;
+import org.springframework.cloud.gateway.handler.predicate.AfterRoutePredicateFactory;
+import org.springframework.cloud.gateway.handler.predicate.BeforeRoutePredicateFactory;
+import org.springframework.cloud.gateway.handler.predicate.BetweenRoutePredicateFactory;
+import org.springframework.cloud.gateway.handler.predicate.CookieRoutePredicateFactory;
+import org.springframework.cloud.gateway.handler.predicate.HeaderRoutePredicateFactory;
+import org.springframework.cloud.gateway.handler.predicate.HostRoutePredicateFactory;
+import org.springframework.cloud.gateway.handler.predicate.MethodRoutePredicateFactory;
+import org.springframework.cloud.gateway.handler.predicate.PathRoutePredicateFactory;
+import org.springframework.cloud.gateway.handler.predicate.QueryRoutePredicateFactory;
+import org.springframework.cloud.gateway.handler.predicate.RemoteAddrRoutePredicateFactory;
+import org.springframework.cloud.gateway.handler.predicate.RoutePredicateFactory;
+import org.springframework.cloud.gateway.route.CachingRouteLocator;
+import org.springframework.cloud.gateway.route.CompositeRouteDefinitionLocator;
+import org.springframework.cloud.gateway.route.CompositeRouteLocator;
+import org.springframework.cloud.gateway.route.InMemoryRouteDefinitionRepository;
+import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
+import org.springframework.cloud.gateway.route.RouteDefinitionRepository;
+import org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator;
+import org.springframework.cloud.gateway.route.RouteDefinitionWriter;
+import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.web.reactive.DispatcherHandler;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
 import org.springframework.web.reactive.socket.server.WebSocketService;
 import org.springframework.web.reactive.socket.server.support.HandshakeWebSocketService;
+
+import com.netflix.hystrix.HystrixObservableCommand;
+
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.ipc.netty.http.client.HttpClient;
 import reactor.ipc.netty.http.client.HttpClientOptions;
 import reactor.ipc.netty.resources.PoolResources;
 import rx.RxReactiveStreams;
 
-import java.util.List;
-import java.util.function.Consumer;
-
 /**
- * Spring Cloud Gateway 核心配置类，初始化如下 ：
+ * 通过@AutoConfigureAfter等注解，我们可以知道改config下的顺序为
+ * {@link GatewayLoadBalancerClientAutoConfiguration}
+ * {@link GatewayClassPathWarningAutoConfiguration}
+ * {@link GatewayRedisAutoConfiguration}
  *
- * NettyConfiguration
- * GlobalFilter
- * FilteringWebHandler
- * GatewayProperties
- * PrefixPathGatewayFilterFactory
- * RoutePredicateFactory
- * RouteDefinitionLocator
- * RouteLocator
- * RoutePredicateHandlerMapping
- * GatewayWebfluxEndpoint
+ *
+ * @TODO 为什么是这个顺序？
+ * Spring Cloud Gateway 核心配置类，初始化如下 ：
+ * {@link NettyConfiguration}
+ * {@link GlobalFilter}
+ * {@link FilteringWebHandler}
+ * {@link GatewayProperties}
+ * {@link PrefixPathGatewayFilterFactory}
+ * {@link RoutePredicateFactory}
+ * {@link RouteDefinitionLocator}
+ * {@link RouteLocator}
+ * {@link RoutePredicateHandlerMapping}
+ * {@link GatewayWebfluxEndpoint}
+ *
+ * @author karen
  */
 //证明这是一个Configuration类，下面的所有注解都会被壮载
 @Configuration
 //通过@ConditionalOnProperty来控制Configuration是否生效
-//在application.properties配置"spring.cloud.gateway.enabled"，对应的值为true
-@ConditionalOnProperty(name = "spring.cloud.gateway.enabled", matchIfMissing = true) // 默认开启
+//在application.properties配置"spring.cloud.gateway.enabled"，对应的值为true，这里是开启网关的意思
+@ConditionalOnProperty(name = "spring.cloud.gateway.enabled", matchIfMissing = true)
 //与@Configuration差不多
 @EnableConfigurationProperties
 //GatewayAutoConfiguration会在HttpHandlerAutoConfiguration之前加载
@@ -89,35 +120,52 @@ import java.util.function.Consumer;
 @ConditionalOnClass(DispatcherHandler.class)
 public class GatewayAutoConfiguration {
 
+	/**
+	 * 1.初始化NettyConfiguration, Bean后的数字代表初始化顺序
+	 */
 	@Configuration
 	@ConditionalOnClass(HttpClient.class)
 	protected static class NettyConfiguration {
-		@Bean // 1.2
+		//1.2
+		@Bean
+		//@ConditionalOnMissingBean：判断当前需要注入Spring容器中的bean的实现类是否已经含有，有的话不注入，没有就注入
 		@ConditionalOnMissingBean
-		public HttpClient httpClient(@Qualifier("nettyClientOptions") Consumer<? super HttpClientOptions.Builder> options) {
+		public HttpClient httpClient(
+				@Qualifier("nettyClientOptions") Consumer<? super HttpClientOptions.Builder> options) {
 			return HttpClient.create(options);
 		}
 
-		@Bean // 1.1
+		//1.1
+		//TODO 了解 reactor.ipc.netty.options.HttpClientOptions.Builder 的opts属性？
+		@Bean
 		public Consumer<? super HttpClientOptions.Builder> nettyClientOptions() {
 			return opts -> {
+				//PoolResources.elastic("proxy")：调用 PoolResources.elastic("proxy")方法，
+				// 创建 name 属性为 "proxy" 的 reactor.ipc.netty.resources.PoolResources
 				opts.poolResources(PoolResources.elastic("proxy"));
-				// opts.disablePool(); //TODO: why do I need this again?
 			};
 		}
 
-//		@Bean // 1.3
-//		public NettyRoutingFilter routingFilter(HttpClient httpClient) {
-//			return new NettyRoutingFilter(httpClient);
-//		}
-//
-//		@Bean // 1.4
-//		public NettyWriteResponseFilter nettyWriteResponseFilter() {
-//			return new NettyWriteResponseFilter();
-//		}
+		// 1.3
+		//使用 HttpClient Bean ，创建一个类型为NettyRoutingFilter的对象
+		@Bean
+		public NettyRoutingFilter routingFilter(HttpClient httpClient) {
+			return new NettyRoutingFilter(httpClient);
+		}
 
-		@Bean // 1.5 {@link org.springframework.cloud.gateway.filter.WebsocketRoutingFilter}
-		public ReactorNettyWebSocketClient reactorNettyWebSocketClient(@Qualifier("nettyClientOptions") Consumer<? super HttpClientOptions.Builder> options) {
+		// 1.4
+		//与 NettyRoutingFilter 成对使用的网关过滤器。
+		@Bean
+		public NettyWriteResponseFilter nettyWriteResponseFilter() {
+			return new NettyWriteResponseFilter();
+		}
+
+		/**
+		 * 1.5 {@link WebsocketRoutingFilter}
+		 */
+		@Bean
+		public ReactorNettyWebSocketClient reactorNettyWebSocketClient(
+				@Qualifier("nettyClientOptions") Consumer<? super HttpClientOptions.Builder> options) {
 			return new ReactorNettyWebSocketClient(options);
 		}
 	}
@@ -142,9 +190,9 @@ public class GatewayAutoConfiguration {
 
 	@Bean // 4.4
 	public RouteLocator routeDefinitionRouteLocator(GatewayProperties properties,
-												   List<GatewayFilterFactory> GatewayFilters,
-												   List<RoutePredicateFactory> predicates,
-												   RouteDefinitionLocator routeDefinitionLocator) {
+			List<GatewayFilterFactory> GatewayFilters,
+			List<RoutePredicateFactory> predicates,
+			RouteDefinitionLocator routeDefinitionLocator) {
 		return new RouteDefinitionRouteLocator(routeDefinitionLocator, predicates, GatewayFilters, properties);
 	}
 
@@ -161,7 +209,7 @@ public class GatewayAutoConfiguration {
 
 	@Bean
 	public RoutePredicateHandlerMapping routePredicateHandlerMapping(FilteringWebHandler webHandler,
-																	   RouteLocator routeLocator) {
+			RouteLocator routeLocator) {
 		return new RoutePredicateHandlerMapping(webHandler, routeLocator);
 	}
 
@@ -196,7 +244,8 @@ public class GatewayAutoConfiguration {
 	}
 
 	@Bean // 2.4
-	public WebsocketRoutingFilter websocketRoutingFilter(WebSocketClient webSocketClient, WebSocketService webSocketService) {
+	public WebsocketRoutingFilter websocketRoutingFilter(WebSocketClient webSocketClient,
+			WebSocketService webSocketService) {
 		return new WebsocketRoutingFilter(webSocketClient, webSocketService);
 	}
 
@@ -323,7 +372,8 @@ public class GatewayAutoConfiguration {
 
 	@Bean
 	@ConditionalOnBean({RateLimiter.class, KeyResolver.class})
-	public RequestRateLimiterGatewayFilterFactory requestRateLimiterGatewayFilterFactory(RateLimiter rateLimiter, PrincipalNameKeyResolver resolver) {
+	public RequestRateLimiterGatewayFilterFactory requestRateLimiterGatewayFilterFactory(RateLimiter rateLimiter,
+			PrincipalNameKeyResolver resolver) {
 		return new RequestRateLimiterGatewayFilterFactory(rateLimiter, resolver);
 	}
 
@@ -358,10 +408,12 @@ public class GatewayAutoConfiguration {
 	protected static class GatewayActuatorConfiguration {
 
 		@Bean
-		public GatewayWebfluxEndpoint gatewayWebfluxEndpoint(RouteDefinitionLocator routeDefinitionLocator, List<GlobalFilter> globalFilters,
-															 List<GatewayFilterFactory> GatewayFilters, RouteDefinitionWriter routeDefinitionWriter,
-															 RouteLocator routeLocator) {
-			return new GatewayWebfluxEndpoint(routeDefinitionLocator, globalFilters, GatewayFilters, routeDefinitionWriter, routeLocator);
+		public GatewayWebfluxEndpoint gatewayWebfluxEndpoint(RouteDefinitionLocator routeDefinitionLocator,
+				List<GlobalFilter> globalFilters,
+				List<GatewayFilterFactory> GatewayFilters, RouteDefinitionWriter routeDefinitionWriter,
+				RouteLocator routeLocator) {
+			return new GatewayWebfluxEndpoint(routeDefinitionLocator, globalFilters, GatewayFilters,
+					routeDefinitionWriter, routeLocator);
 		}
 	}
 

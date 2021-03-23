@@ -16,6 +16,9 @@ import reactor.core.publisher.Mono;
  * 6.{@link NettyRoutingFilter} Integer.MAX_VALUE
  * 7.{@link WebClientHttpRoutingFilter} Integer.MAX_VALUE
  * 8.{@link WebsocketRoutingFilter} Integer.MAX_VALUE
+ *
+ * 思考与{@link GatewayFilter}的区别
+ *
  * @author karen
  */
 public interface GlobalFilter {

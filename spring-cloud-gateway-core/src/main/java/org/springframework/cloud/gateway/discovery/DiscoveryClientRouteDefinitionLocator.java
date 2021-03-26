@@ -19,12 +19,10 @@ import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
 import reactor.core.publisher.Flux;
 
 /**
- * TODO: developer configuration, in zuul, this was opt out, should be opt in
- * TODO: change to RouteLocator? use java dsl
  *
  * TODO 初始化？
  * 通过调用 org.springframework.cloud.client.discovery.DiscoveryClient
- * 获取注册在注册中心的服务列表，生成对应的 RouteDefinition 数组。
+ * 获取注册在【注册中心】的服务列表，生成对应的 RouteDefinition 数组。
  * @author karen
  */
 public class DiscoveryClientRouteDefinitionLocator implements RouteDefinitionLocator {

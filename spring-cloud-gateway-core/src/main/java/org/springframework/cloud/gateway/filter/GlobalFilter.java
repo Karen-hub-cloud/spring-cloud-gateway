@@ -6,7 +6,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import reactor.core.publisher.Mono;
 
 /**
- * 全局过滤器接口,GlobalFilter 会作用到所有的 Route 上。
+ * 全局过滤器接口,GlobalFilter 会【❤️作用到所有的 Route 上】。
  * 顺序：
  * 1.{@link NettyWriteResponseFilter} -1
  * 2.{@link WebClientWriteResponseFilter} -1

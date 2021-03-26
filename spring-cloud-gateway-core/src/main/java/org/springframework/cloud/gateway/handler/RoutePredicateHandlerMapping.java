@@ -13,7 +13,7 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.G
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR;
 
 /**
- * 🌟核心：接收到请求，匹配 Route
+ * 【🌟核心】请求到来的第一步：接收到请求，匹配 Route
  * @author karen
  */
 public class RoutePredicateHandlerMapping extends AbstractHandlerMapping {

@@ -21,8 +21,9 @@ import org.springframework.web.server.WebHandler;
 import reactor.core.publisher.Mono;
 
 /**
- * 获得 Route 的 GatewayFilter 数组，创建 GatewayFilterChain 处理请求。
- *
+ * 【🌟核心】请求到来的第二步：
+ *  获得 Route 的 GatewayFilter 数组，创建 GatewayFilterChain 处理请求（进行了排序）。
+ *  内部类{@link GatewayFilterAdapter}用于将GlobalFilter转换为GatewayFilter
  * @author karen
  */
 public class FilteringWebHandler implements WebHandler {
@@ -99,8 +100,9 @@ public class FilteringWebHandler implements WebHandler {
 	}
 
 	/**
-	 * 网关过滤器适配器。在 GatewayFilterChain 使用 GatewayFilter 过滤请求，
-	 * 所以通过 GatewayFilterAdapter 将 GlobalFilter 适配成 GatewayFilter
+	 * 【🌟核心】网关过滤器适配器。在 GatewayFilterChain 使用 GatewayFilter 过滤请求，
+	 *  所以通过 GatewayFilterAdapter 将 GlobalFilter 适配成 GatewayFilter
+	 * （建FilterChain时是按照GatewayFilter建的，所以这里需要转化一下）
 	 */
 	private static class GatewayFilterAdapter implements GatewayFilter {
 

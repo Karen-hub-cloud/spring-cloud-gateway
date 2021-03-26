@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 /**
  * 网关过滤器接口，GatewayFilter 有三种类型的子类实现
  * TODO Q:与GlobalFilter的区别？{@link GlobalFilter}
+ * 什么时候发挥作用？应该是需要{@link Route#setFilter}
  * @author karen
  */
 public interface GatewayFilter {

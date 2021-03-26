@@ -32,7 +32,8 @@ import org.springframework.web.reactive.function.server.ServerResponse;
  */
 @SpringBootConfiguration
 @EnableAutoConfiguration
-@Import({Config.class, AdditionalRoutes.class})
+//@Import({Config.class, AdditionalRoutes.class})
+@Import({Config.class})
 @EnableDiscoveryClient
 public class GatewaySampleApplication {
 

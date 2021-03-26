@@ -36,6 +36,8 @@ import reactor.core.publisher.Flux;
 
 /**
  * {@link RouteLocator} that loads routes from a {@link RouteDefinitionLocator}
+ * RouteDefinition 转换成 Route
+ * 注意与{@link RouteDefinitionLocator}，{@link RouteDefinitionRouteLocator}的关系
  * @author karen
  */
 public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAware {
@@ -106,8 +108,9 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 	 */
 	@Override
 	public Flux<Route> getRoutes() {
+		//第一步，从RouteDefinitionLocator获得RouteDefinition数组
 		return this.routeDefinitionLocator.getRouteDefinitions()
-				// RouteDefinition => Route
+				// 第二步，通过convertToRoute方法，将RouteDefinition => Route
 				.map(this::convertToRoute)
 				// 打印日志
 				.map(route -> {
@@ -126,7 +129,7 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 		Predicate<ServerWebExchange> predicate = combinePredicates(routeDefinition);
 		// 获得 GatewayFilter
 		List<GatewayFilter> gatewayFilters = getFilters(routeDefinition);
-		// 构建 Route
+		// 构建 Route，看Route类，会发现Builder方法实现了RouteDefinition-》Route的转换
 		return Route.builder(routeDefinition)
 				.predicate(predicate)
 				.gatewayFilters(gatewayFilters)

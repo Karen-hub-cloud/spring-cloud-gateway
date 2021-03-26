@@ -27,7 +27,7 @@ import reactor.ipc.netty.http.client.HttpClient;
 import reactor.ipc.netty.http.client.HttpClientRequest;
 
 /**
- * Netty 路由网关过滤器。其根据 http:// 或 https:// 前缀( Scheme )过滤处理，
+ * Netty 路由网关过滤器。其根据 【http:// 或 https://】 前缀( Scheme )过滤处理，
  * 使用基于 Netty 实现的 HttpClient 请求后端 Http 服务。
  * 与{@link NettyWriteResponseFilter}成对出现
  * @author karen

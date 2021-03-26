@@ -1,60 +1,46 @@
-/*
- * Copyright 2013-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.springframework.cloud.gateway.handler.predicate;
 
-import org.springframework.cloud.gateway.support.NameUtils;
-import org.springframework.validation.annotation.Validated;
+import static org.springframework.util.StringUtils.tokenizeToStringArray;
 
-import javax.validation.ValidationException;
-import javax.validation.constraints.NotNull;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.springframework.util.StringUtils.tokenizeToStringArray;
+import javax.validation.ValidationException;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.cloud.gateway.support.NameUtils;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * 谓语定义
+ * 同{@link org.springframework.cloud.gateway.filter.FilterDefinition}
+ * 解析配置中的Predicate，绑定到一个PredicateDefinition对象
  *
- * @author Spencer Gibb
+ * @author Karen
  */
 @Validated
 public class PredicateDefinition {
 
-    /**
-     * 谓语定义名字
-     */
-    @NotNull
+	/**
+	 * 谓语定义名字
+	 */
+	@NotNull
 	private String name;
-    /**
-     * 参数数组
-     */
+	/**
+	 * 参数数组
+	 */
 	private Map<String, String> args = new LinkedHashMap<>();
 
 	public PredicateDefinition() {
 	}
 
-    /**
-     * 根据 text 创建 PredicateDefinition
-     *
-     * @param text 格式 ${name}=${args[0]},${args[1]}...${args[n]}
-     *             例如 Host=iocoder.cn
-     */
+	/**
+	 * 根据 text 创建 PredicateDefinition
+	 *
+	 * @param text 格式 ${name}=${args[0]},${args[1]}...${args[n]}
+	 * 例如 Host=iocoder.cn
+	 */
 	public PredicateDefinition(String text) {
 		int eqIdx = text.indexOf("=");
 		if (eqIdx <= 0) {
@@ -64,8 +50,8 @@ public class PredicateDefinition {
 		// name
 		setName(text.substring(0, eqIdx));
 		// args
-		String[] args = tokenizeToStringArray(text.substring(eqIdx+1), ",");
-		for (int i=0; i < args.length; i++) {
+		String[] args = tokenizeToStringArray(text.substring(eqIdx + 1), ",");
+		for (int i = 0; i < args.length; i++) {
 			this.args.put(NameUtils.generateName(i), args[i]);
 		}
 	}
@@ -92,8 +78,12 @@ public class PredicateDefinition {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		PredicateDefinition that = (PredicateDefinition) o;
 		return Objects.equals(name, that.name) &&
 				Objects.equals(args, that.args);
@@ -113,8 +103,8 @@ public class PredicateDefinition {
 		return sb.toString();
 	}
 
-    public static void main(String[] args) {
-        new PredicateDefinition("Host=iocoder.cn");
-    }
+	public static void main(String[] args) {
+		new PredicateDefinition("Host=iocoder.cn");
+	}
 
 }

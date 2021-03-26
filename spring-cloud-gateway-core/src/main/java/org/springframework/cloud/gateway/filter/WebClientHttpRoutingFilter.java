@@ -19,6 +19,7 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.*
 /**
  * 与{@link WebClientWriteResponseFilter}成对使用
  *
+ * 根据前缀【http:// https://】处理
  * @author karen
  */
 public class WebClientHttpRoutingFilter implements GlobalFilter, Ordered {

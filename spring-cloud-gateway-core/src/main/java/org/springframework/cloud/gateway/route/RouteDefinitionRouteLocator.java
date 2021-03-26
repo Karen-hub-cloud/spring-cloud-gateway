@@ -36,8 +36,11 @@ import reactor.core.publisher.Flux;
 
 /**
  * {@link RouteLocator} that loads routes from a {@link RouteDefinitionLocator}
- * RouteDefinition 转换成 Route
+ * 1.RouteDefinition 转换成 Route
+ * 2.PredicateDefinition 转换成 AsyncPredicate
+ * 3.FilterDefinition 转换成 GatewayFilter
  * 注意与{@link RouteDefinitionLocator}，{@link RouteDefinitionRouteLocator}的关系
+ *
  * @author karen
  */
 public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAware {
@@ -104,7 +107,6 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 
 	/**
 	 * 获得route数组
-	 * @return
 	 */
 	@Override
 	public Flux<Route> getRoutes() {
@@ -168,9 +170,10 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 	}
 
 	/**
-	 *  TODO：Q 为什么 RoutePredicateFactory#apply(Tuple) / GatewayFilterFactory#apply(Tuple) 需要使用 Tuple 呢 ？RoutePredicateFactory /
-	 *  GatewayFilterFactory 子类实现类需要成对的参数不同，例如 ：
-	 *
+	 * TODO：Q 为什么 RoutePredicateFactory#apply(Tuple) / GatewayFilterFactory#apply(Tuple) 需要使用 Tuple 呢
+	 * ？RoutePredicateFactory /
+	 * GatewayFilterFactory 子类实现类需要成对的参数不同，例如 ：
+	 * <p>
 	 * org.springframework.cloud.gateway.filter.factory.SetStatusGatewayFilterFactory ，使用 status 一对参数。
 	 * org.springframework.cloud.gateway.filter.factory.SetResponseHeaderGatewayFilterFactory ，使用 name / value 两对参数。
 	 */

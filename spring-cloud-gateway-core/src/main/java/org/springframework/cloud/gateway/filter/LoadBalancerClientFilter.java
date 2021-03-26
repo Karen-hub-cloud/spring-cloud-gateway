@@ -17,7 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 /**
- * LoadBalancerClientFilter 根据 lb:// 前缀过滤处理，
+ * LoadBalancerClientFilter 根据 【lb://】 前缀过滤处理，
  * 使用 serviceId 选择一个服务实例，从而实现负载均衡。
  * @author karen
  */

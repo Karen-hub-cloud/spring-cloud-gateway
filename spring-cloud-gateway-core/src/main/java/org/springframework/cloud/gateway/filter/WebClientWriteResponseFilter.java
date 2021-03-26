@@ -13,7 +13,7 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.C
 
 /**
  * Http 路由网关过滤器。
- * 其根据 http:// 或 https:// 前缀(Scheme)过滤处理，
+ * 其根据 【http:// 或 https://】 前缀(Scheme)过滤处理，
  * 使用基于 org.springframework.cloud.gateway.filter.WebClient 实现的 HttpClient 请求后端 Http 服务。
  *
  * 与 {@link WebClientHttpRoutingFilter} 成对使用

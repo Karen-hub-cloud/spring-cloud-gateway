@@ -18,7 +18,7 @@ import java.util.List;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.*;
 
 /**
- * Websocket 路由网关过滤器。其根据 ws:// / wss:// 前缀( Scheme )过滤处理，
+ * Websocket 路由网关过滤器。其根据 【ws:// / wss://】 前缀( Scheme )过滤处理，
  * 代理后端 Websocket 服务，提供给客户端连接。
  * @author karen
  */

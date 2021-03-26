@@ -22,7 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.gateway.handler.predicate.RoutePredicateFactory;
 
 /**
- * @author Spencer Gibb
+ * @author Karen
  */
 public class RoutePredicateFactoryUtils {
 	private static final Log logger = LogFactory.getLog(RoutePredicateFactory.class);

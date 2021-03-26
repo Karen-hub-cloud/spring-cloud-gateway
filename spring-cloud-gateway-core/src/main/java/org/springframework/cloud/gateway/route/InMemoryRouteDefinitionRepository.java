@@ -30,7 +30,7 @@ import static java.util.Collections.synchronizedMap;
  * 基于内存为存储器的 RouteDefinitionLocator
  * 注意，由于基于内存，网关实例重启或者崩溃后，RouteDefinition会丢失
  *
- * @author Spencer Gibb
+ * @author Karen
  */
 public class InMemoryRouteDefinitionRepository implements RouteDefinitionRepository {
 

@@ -21,7 +21,7 @@ import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory;
 import org.springframework.cloud.gateway.handler.predicate.RoutePredicateFactory;
 
 /**
- * @author Spencer Gibb
+ * @author Karen
  */
 public class NameUtils {
 	public static final String GENERATED_NAME_PREFIX = "_genkey_";

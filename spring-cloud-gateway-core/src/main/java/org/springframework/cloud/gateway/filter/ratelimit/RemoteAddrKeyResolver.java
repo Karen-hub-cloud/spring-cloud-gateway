@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
  * 第二步：配置 RemoteAddrKeyResolver Bean 对象 {@link #remoteAddrKeyResolver()}
  * 第三步，配置 RouteDefinition 路由配置
  *
- * @author tiankun <tiankun@kuaishou.com>
+ * @author Karen
  * Created on 2021-03-19
  */
 public class RemoteAddrKeyResolver implements KeyResolver {

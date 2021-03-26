@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Spencer Gibb
+ * @author Karen
  */
 public interface ArgumentHints {
 

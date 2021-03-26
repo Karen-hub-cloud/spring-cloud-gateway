@@ -36,7 +36,7 @@ import static org.springframework.util.StringUtils.tokenizeToStringArray;
 /**
  * 路由定义
  *
- * @author Spencer Gibb
+ * @author Karen
  */
 @Validated
 public class RouteDefinition {

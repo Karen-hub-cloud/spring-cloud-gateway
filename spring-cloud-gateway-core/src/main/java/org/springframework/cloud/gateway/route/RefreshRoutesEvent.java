@@ -20,7 +20,7 @@ package org.springframework.cloud.gateway.route;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * @author Spencer Gibb
+ * @author Karen
  */
 public class RefreshRoutesEvent extends ApplicationEvent {
 

@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * Annotation to activate Spring Cloud Gateway configuration {@link org.springframework.cloud.gateway.config.GatewayAutoConfiguration}
  *
  * @deprecated taken care of by auto-configuration now. To be removed in future milestone.
- * @author Spencer Gibb
+ * @author Karen
  *
  */
 

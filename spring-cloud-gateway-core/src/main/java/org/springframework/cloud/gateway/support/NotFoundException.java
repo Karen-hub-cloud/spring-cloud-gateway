@@ -18,7 +18,7 @@
 package org.springframework.cloud.gateway.support;
 
 /**
- * @author Spencer Gibb
+ * @author Karen
  */
 public class NotFoundException extends RuntimeException {
 	public NotFoundException(String message) {
